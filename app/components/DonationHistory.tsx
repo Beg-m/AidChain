@@ -1,30 +1,42 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getDonationHistory, DonationData, formatXLM } from '../utils/stellar';
+import { getDonationHistory, DonationData, formatXLM, WalletInfo } from '../utils/stellar';
+import { demoDonations } from '../utils/demoData';
 
 interface DonationHistoryProps {
   isOpen: boolean;
   onClose: () => void;
+  walletInfo: WalletInfo | null;
 }
 
-export default function DonationHistory({ isOpen, onClose }: DonationHistoryProps) {
+export default function DonationHistory({ isOpen, onClose, walletInfo }: DonationHistoryProps) {
   const [donations, setDonations] = useState<DonationData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      loadDonationHistory();
+      if (walletInfo?.publicKey) {
+        loadDonationHistory(walletInfo.publicKey);
+      } else {
+        // Demo modunda örnek verileri göster
+        setDonations(demoDonations);
+        setError(null);
+        setLoading(false);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, walletInfo]);
 
-  const loadDonationHistory = () => {
+  const loadDonationHistory = async (publicKey: string) => {
     setLoading(true);
+    setError(null);
     try {
-      const history = getDonationHistory();
+      const history = await getDonationHistory(publicKey);
       setDonations(history);
-    } catch (error) {
-      console.error('Error loading donation history:', error);
+    } catch (err: any) {
+      setError('Failed to load donation history.');
+      setDonations([]);
     } finally {
       setLoading(false);
     }
@@ -123,11 +135,17 @@ export default function DonationHistory({ isOpen, onClose }: DonationHistoryProp
           >
             ×
           </button>
+          <span className={`ml-4 px-3 py-1 rounded-full text-xs font-semibold ${walletInfo?.publicKey ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{walletInfo?.publicKey ? 'On-Chain Data' : 'Demo Data'}</span>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-gray-600">Loading...</div>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-8 text-red-600">
+            <div className="text-4xl mb-4">❌</div>
+            <p className="text-lg mb-2">{error}</p>
           </div>
         ) : donations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-gray-600">

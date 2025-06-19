@@ -69,24 +69,80 @@ export const createDonation = async (
   recipientAddress: string = 'GCNY5OXYSY4FKHOPT2SPOQZAOEIGXB5LBYW3HVU3OWSTQITS65M5RCNY' // Demo recipient
 ): Promise<DonationData> => {
   try {
+    // 1. Kullanıcı adresini al
     const { address: publicKey } = await freighterApi.getAddress();
-    // Account info and sequence number should be fetched via API in production
-    // For demo, we cannot build a real transaction without account info
-    // Instead, you should POST to an API route that builds and submits the transaction
-    throw new Error('Transaction building must be done on the server/API route for security and compatibility.');
-  } catch (error) {
+
+    // 2. Stellar sunucusuna bağlan
+    const server = new StellarSdk.Server(HORIZON_URL);
+    const account = await server.loadAccount(publicKey);
+
+    // 3. İşlem oluştur
+    const fee = await server.fetchBaseFee();
+    const transaction = new StellarSdk.TransactionBuilder(account, {
+      fee: fee.toString(),
+      networkPassphrase: StellarSdk.Networks.TESTNET,
+    })
+      .addOperation(
+        StellarSdk.Operation.payment({
+          destination: recipientAddress,
+          asset: StellarSdk.Asset.native(),
+          amount: amount.toString(),
+        })
+      )
+      .setTimeout(30)
+      .build();
+
+    // 4. İşlemi XDR olarak serialize et
+    const xdr = transaction.toXDR();
+
+    // 5. Freighter ile imzala
+    const signedXDR = await freighterApi.signTransaction(xdr, {
+      network: 'TESTNET',
+    });
+
+    // 6. İşlemi gönder
+    const tx = StellarSdk.TransactionBuilder.fromXDR(signedXDR, StellarSdk.Networks.TESTNET);
+    const result = await server.submitTransaction(tx);
+
+    // 7. DonationData objesi oluştur
+    const donation: DonationData = {
+      id: result.hash,
+      amount,
+      category,
+      region,
+      timestamp: new Date().toISOString(),
+      transactionHash: result.hash,
+      status: 'completed',
+      donorAddress: publicKey,
+    };
+    return donation;
+  } catch (error: any) {
     console.error('Donation creation error:', error);
-    throw error;
+    throw new Error(error?.message || 'Donation transaction failed.');
   }
 };
 
-// Get donation history
-export const getDonationHistory = (): DonationData[] => {
+// Get donation history (on-chain)
+export const getDonationHistory = async (publicKey: string): Promise<DonationData[]> => {
   try {
-    const donations = localStorage.getItem('donations');
-    return donations ? JSON.parse(donations) : [];
+    const server = new StellarSdk.Server(HORIZON_URL);
+    // Sadece gönderici olduğu işlemleri çek
+    const payments = await server.payments().forAccount(publicKey).order('desc').limit(20).call();
+    const donations: DonationData[] = payments.records
+      .filter((op: any) => op.type === 'payment' && op.asset_type === 'native' && op.from === publicKey)
+      .map((op: any) => ({
+        id: op.id,
+        amount: op.amount,
+        category: 'money', // On-chain'den kategori bilgisi alınamaz, default 'money'
+        region: 'unknown', // On-chain'den bölge bilgisi alınamaz, default 'unknown'
+        timestamp: op.created_at,
+        transactionHash: op.transaction_hash,
+        status: 'completed',
+        donorAddress: op.from,
+      }));
+    return donations;
   } catch (error) {
-    console.error('Error loading donation history:', error);
+    console.error('Error loading on-chain donation history:', error);
     return [];
   }
 };

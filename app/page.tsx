@@ -23,14 +23,21 @@ export default function Home() {
   // Load donation statistics on mount and populate demo data
   useEffect(() => {
     populateDemoData(); // Populate demo data if empty
-    updateDonationStats();
-  }, []);
+    if (walletInfo?.publicKey) {
+      updateDonationStats(walletInfo.publicKey);
+    }
+  }, [walletInfo]);
 
-  const updateDonationStats = () => {
-    const donations = getDonationHistory();
-    setDonationCount(donations.length);
-    const total = donations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
-    setTotalDonations(total.toString());
+  const updateDonationStats = async (publicKey: string) => {
+    try {
+      const donations = await getDonationHistory(publicKey);
+      setDonationCount(donations.length);
+      const total = donations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+      setTotalDonations(total.toString());
+    } catch (e) {
+      setDonationCount(0);
+      setTotalDonations('0');
+    }
   };
 
   // Demo Passkey login (without real backend, just WebAuthn API call)
@@ -64,6 +71,36 @@ export default function Home() {
     }
   }
 
+  // Demo Passkey registration (without real backend, just WebAuthn API call)
+  async function handlePasskeyRegister() {
+    setLoading(true);
+    setError(null);
+    try {
+      // Demo registration flow
+      // In real app, challenge and user info would come from server
+      const challenge = btoa(String.fromCharCode(...new Uint8Array(32)));
+      await create({
+        publicKey: {
+          challenge,
+          rp: { name: "AidChain" },
+          user: {
+            id: btoa(String.fromCharCode(...new Uint8Array(16))),
+            name: "demo@aidchain.com",
+            displayName: "Demo User",
+          },
+          pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+          timeout: 60000,
+          attestation: "none",
+        },
+      });
+      setError("Registration successful! Now you can login.");
+    } catch (e: any) {
+      setError("Registration failed or was cancelled.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const handleWalletConnected = (info: WalletInfo) => {
     setWalletInfo(info);
   };
@@ -73,7 +110,9 @@ export default function Home() {
   };
 
   const handleDonationSuccess = () => {
-    updateDonationStats();
+    if (walletInfo?.publicKey) {
+      updateDonationStats(walletInfo.publicKey);
+    }
   };
 
   return (
@@ -216,13 +255,20 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm flex flex-col items-center">
             <h2 className="text-xl font-bold mb-4 text-blue-700">Login with Passkey</h2>
             <p className="text-gray-700 mb-6 text-center">Use Passkey for secure login.</p>
-            {error && <div className="text-red-600 mb-2">{error}</div>}
+            {error && <div className={`mb-2 ${error.includes('successful') ? 'text-green-600' : 'text-red-600'}`}>{error}</div>}
             <button
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow w-full mb-2 disabled:opacity-60"
               onClick={handlePasskeyLogin}
               disabled={loading}
             >
               {loading ? "Logging in..." : "Login with Passkey"}
+            </button>
+            <button
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow w-full mb-2 disabled:opacity-60"
+              onClick={handlePasskeyRegister}
+              disabled={loading}
+            >
+              {loading ? "Registering..." : "Register with Passkey"}
             </button>
             <button
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow w-full"
@@ -247,6 +293,7 @@ export default function Home() {
       <DonationHistory
         isOpen={showDonationHistoryModal}
         onClose={() => setShowDonationHistoryModal(false)}
+        walletInfo={walletInfo}
       />
     </div>
   );
