@@ -5,7 +5,7 @@ export const demoDonations: DonationData[] = [
   {
     id: 'demo-1',
     amount: '25.5',
-    category: 'para',
+    category: 'money',
     region: 'istanbul',
     timestamp: '2024-01-15T10:30:00.000Z',
     transactionHash: 'a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456',
@@ -15,7 +15,7 @@ export const demoDonations: DonationData[] = [
   {
     id: 'demo-2',
     amount: '15.0',
-    category: 'battaniye',
+    category: 'blanket',
     region: 'ankara',
     timestamp: '2024-01-14T14:20:00.000Z',
     transactionHash: 'b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890',
@@ -25,7 +25,7 @@ export const demoDonations: DonationData[] = [
   {
     id: 'demo-3',
     amount: '8.75',
-    category: 'gida',
+    category: 'food',
     region: 'izmir',
     timestamp: '2024-01-13T09:15:00.000Z',
     transactionHash: 'c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890ab',
@@ -35,7 +35,7 @@ export const demoDonations: DonationData[] = [
   {
     id: 'demo-4',
     amount: '12.25',
-    category: 'giysi',
+    category: 'clothing',
     region: 'antalya',
     timestamp: '2024-01-12T16:45:00.000Z',
     transactionHash: 'd4e5f6789012345678901234567890abcdef1234567890abcdef1234567890abcd',
@@ -45,7 +45,7 @@ export const demoDonations: DonationData[] = [
   {
     id: 'demo-5',
     amount: '30.0',
-    category: 'para',
+    category: 'money',
     region: 'bursa',
     timestamp: '2024-01-11T11:30:00.000Z',
     transactionHash: 'e5f6789012345678901234567890abcdef1234567890abcdef1234567890abcde',
@@ -55,7 +55,7 @@ export const demoDonations: DonationData[] = [
   {
     id: 'demo-6',
     amount: '5.5',
-    category: 'ilac',
+    category: 'medicine',
     region: 'adana',
     timestamp: '2024-01-10T13:20:00.000Z',
     transactionHash: 'f6789012345678901234567890abcdef1234567890abcdef1234567890abcdef',
@@ -65,7 +65,7 @@ export const demoDonations: DonationData[] = [
   {
     id: 'demo-7',
     amount: '18.75',
-    category: 'temizlik',
+    category: 'cleaning',
     region: 'gaziantep',
     timestamp: '2024-01-09T15:10:00.000Z',
     transactionHash: '6789012345678901234567890abcdef1234567890abcdef1234567890abcdef12',
@@ -75,7 +75,7 @@ export const demoDonations: DonationData[] = [
   {
     id: 'demo-8',
     amount: '22.0',
-    category: 'para',
+    category: 'money',
     region: 'konya',
     timestamp: '2024-01-08T12:00:00.000Z',
     transactionHash: '7890123456789012345678901234567890abcdef1234567890abcdef123456789',

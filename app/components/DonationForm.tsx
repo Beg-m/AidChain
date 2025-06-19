@@ -17,7 +17,7 @@ export default function DonationForm({
   onDonationSuccess 
 }: DonationFormProps) {
   const [donationAmount, setDonationAmount] = useState('');
-  const [donationCategory, setDonationCategory] = useState('para');
+  const [donationCategory, setDonationCategory] = useState('money');
   const [donationRegion, setDonationRegion] = useState('istanbul');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,17 +27,17 @@ export default function DonationForm({
     e.preventDefault();
     
     if (!walletInfo?.isConnected) {
-      setError('Bağış yapmak için cüzdan bağlantısı gereklidir.');
+      setError('Wallet connection required to make donation.');
       return;
     }
 
     if (!donationAmount || parseFloat(donationAmount) <= 0) {
-      setError('Geçerli bir bağış miktarı giriniz.');
+      setError('Please enter a valid donation amount.');
       return;
     }
 
     if (parseFloat(donationAmount) > parseFloat(walletInfo.balance)) {
-      setError('Cüzdanınızda yeterli bakiye bulunmuyor.');
+      setError('Insufficient balance in your wallet.');
       return;
     }
 
@@ -57,7 +57,7 @@ export default function DonationForm({
         setSuccess(false);
       }, 2000);
     } catch (error: any) {
-      setError(error.message || 'Bağış işlemi başarısız oldu.');
+      setError(error.message || 'Donation transaction failed.');
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export default function DonationForm({
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-blue-700">Yardım Oluştur</h2>
+          <h2 className="text-2xl font-bold text-blue-700">Create Donation</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -82,9 +82,9 @@ export default function DonationForm({
         {success ? (
           <div className="text-center py-8">
             <div className="text-6xl mb-4">✅</div>
-            <h3 className="text-xl font-semibold text-green-700 mb-2">Bağış Başarılı!</h3>
+            <h3 className="text-xl font-semibold text-green-700 mb-2">Donation Successful!</h3>
             <p className="text-gray-600">
-              {formatXLM(donationAmount)} XLM bağışınız başarıyla gönderildi.
+              Your donation of {formatXLM(donationAmount)} XLM has been sent successfully.
             </p>
           </div>
         ) : (
@@ -92,23 +92,23 @@ export default function DonationForm({
             {!walletInfo?.isConnected ? (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <p className="text-yellow-800 text-sm">
-                  Bağış yapmak için önce Stellar cüzdanınızı bağlayın.
+                  Please connect your Stellar wallet to make a donation.
                 </p>
               </div>
             ) : (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-green-800 text-sm">
-                  Cüzdan bağlı: {walletInfo.publicKey.slice(0, 8)}...{walletInfo.publicKey.slice(-8)}
+                  Wallet connected: {walletInfo.publicKey.slice(0, 8)}...{walletInfo.publicKey.slice(-8)}
                 </p>
                 <p className="text-green-700 text-sm mt-1">
-                  Bakiye: {formatXLM(walletInfo.balance)} XLM
+                  Balance: {formatXLM(walletInfo.balance)} XLM
                 </p>
               </div>
             )}
 
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Bağış Miktarı (XLM)
+                Donation Amount (XLM)
               </label>
               <input
                 type="number"
@@ -118,7 +118,7 @@ export default function DonationForm({
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={donationAmount}
                 onChange={(e) => setDonationAmount(e.target.value)}
-                placeholder="Örn: 10.5"
+                placeholder="e.g., 10.5"
                 disabled={loading || !walletInfo?.isConnected}
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -128,7 +128,7 @@ export default function DonationForm({
 
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Kategori
+                Category
               </label>
               <select
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -136,18 +136,18 @@ export default function DonationForm({
                 onChange={(e) => setDonationCategory(e.target.value)}
                 disabled={loading}
               >
-                <option value="para">Para</option>
-                <option value="battaniye">Battaniye</option>
-                <option value="gida">Gıda</option>
-                <option value="giysi">Giysi</option>
-                <option value="ilac">İlaç</option>
-                <option value="temizlik">Temizlik Malzemesi</option>
+                <option value="money">Money</option>
+                <option value="blanket">Blanket</option>
+                <option value="food">Food</option>
+                <option value="clothing">Clothing</option>
+                <option value="medicine">Medicine</option>
+                <option value="cleaning">Cleaning Supplies</option>
               </select>
             </div>
 
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Bölge
+                Region
               </label>
               <select
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -155,15 +155,15 @@ export default function DonationForm({
                 onChange={(e) => setDonationRegion(e.target.value)}
                 disabled={loading}
               >
-                <option value="istanbul">İstanbul</option>
+                <option value="istanbul">Istanbul</option>
                 <option value="ankara">Ankara</option>
-                <option value="izmir">İzmir</option>
+                <option value="izmir">Izmir</option>
                 <option value="antalya">Antalya</option>
                 <option value="bursa">Bursa</option>
                 <option value="adana">Adana</option>
                 <option value="gaziantep">Gaziantep</option>
                 <option value="konya">Konya</option>
-                <option value="diger">Diğer</option>
+                <option value="other">Other</option>
               </select>
             </div>
 
@@ -179,7 +179,7 @@ export default function DonationForm({
                 disabled={loading || !walletInfo?.isConnected}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'İşlem Yapılıyor...' : 'Bağış Yap'}
+                {loading ? 'Processing...' : 'Make Donation'}
               </button>
               <button
                 type="button"
@@ -187,7 +187,7 @@ export default function DonationForm({
                 disabled={loading}
                 className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-3 px-6 rounded-lg shadow transition-colors disabled:opacity-50"
               >
-                İptal
+                Cancel
               </button>
             </div>
           </form>

@@ -1,176 +1,176 @@
-# AidChain - Stellar Blockchain Tabanlı Bağış Takip Sistemi
+# AidChain - Stellar Blockchain-Based Donation Tracking System
 
-AidChain, afet yardımlarında şeffaflık ve güven için Stellar blockchain üzerinde çalışan toplumsal fayda odaklı bağış takip sistemidir.
+AidChain is a social impact donation tracking system built on Stellar blockchain for transparency and trust in disaster relief.
 
-## 🚀 Özellikler
+## 🚀 Features
 
-### 🔐 Güvenli Giriş
-- **Passkey Desteği**: Modern ve güvenli biyometrik giriş
-- **WebAuthn API**: Tarayıcı tabanlı kimlik doğrulama
+### 🔐 Secure Login
+- **Passkey Support**: Modern and secure biometric login
+- **WebAuthn API**: Browser-based authentication
 
-### 💰 Stellar Blockchain Entegrasyonu
-- **Freighter Cüzdan Desteği**: Stellar cüzdan entegrasyonu
-- **Gerçek Zamanlı İşlemler**: Blockchain üzerinde anlık bağış işlemleri
-- **Şeffaf Takip**: Tüm bağışların blockchain üzerinde görülebilir olması
-- **Testnet Desteği**: Geliştirme için Stellar testnet kullanımı
+### 💰 Stellar Blockchain Integration
+- **Freighter Wallet Support**: Stellar wallet integration
+- **Real-time Transactions**: Instant donation transactions on blockchain
+- **Transparent Tracking**: All donations visible on blockchain
+- **Testnet Support**: Stellar testnet usage for development
 
-### 📊 Bağış Yönetimi
-- **Çoklu Kategori**: Para, battaniye, gıda, giysi, ilaç, temizlik malzemesi
-- **Bölgesel Dağıtım**: Türkiye'nin farklı bölgelerine bağış
-- **Bağış Geçmişi**: Detaylı işlem geçmişi ve istatistikler
-- **Gerçek Zamanlı Bakiye**: Cüzdan bakiyesi takibi
+### 📊 Donation Management
+- **Multiple Categories**: Money, blankets, food, clothing, medicine, cleaning supplies
+- **Regional Distribution**: Donations to different regions of Turkey
+- **Donation History**: Detailed transaction history and statistics
+- **Real-time Balance**: Wallet balance tracking
 
-### 🎨 Kullanıcı Deneyimi
-- **Modern UI/UX**: Tailwind CSS ile responsive tasarım
-- **Türkçe Arayüz**: Tam Türkçe dil desteği
-- **Mobil Uyumlu**: Tüm cihazlarda mükemmel deneyim
+### 🎨 User Experience
+- **Modern UI/UX**: Responsive design with Tailwind CSS
+- **English Interface**: Full English language support
+- **Mobile Compatible**: Perfect experience on all devices
 
-## 🛠️ Kurulum
+## 🛠️ Installation
 
-### Gereksinimler
+### Requirements
 - Node.js 18+ 
-- npm veya yarn
-- Freighter Cüzdan (tarayıcı eklentisi)
+- npm or yarn
+- Freighter Wallet (browser extension)
 
-### Adım 1: Projeyi Klonlayın
+### Step 1: Clone the Project
 ```bash
 git clone <repository-url>
 cd AidChain-main
 ```
 
-### Adım 2: Bağımlılıkları Yükleyin
+### Step 2: Install Dependencies
 ```bash
 npm install
 ```
 
-### Adım 3: Geliştirme Sunucusunu Başlatın
+### Step 3: Start Development Server
 ```bash
 npm run dev
 ```
 
-### Adım 4: Freighter Cüzdanını Kurun
-1. [Freighter.app](https://www.freighter.app/) adresinden cüzdanı indirin
-2. Tarayıcınıza yükleyin
-3. Testnet hesabı oluşturun veya mevcut hesabınızı import edin
+### Step 4: Install Freighter Wallet
+1. Download wallet from [Freighter.app](https://www.freighter.app/)
+2. Install in your browser
+3. Create testnet account or import existing account
 
-## 🔧 Kullanım
+## 🔧 Usage
 
-### 1. Giriş Yapın
-- "Passkey ile Giriş" butonuna tıklayın
-- Tarayıcınızın biyometrik giriş sistemini kullanın
+### 1. Login
+- Click "Login with Passkey" button
+- Use your browser's biometric login system
 
-### 2. Cüzdan Bağlayın
-- "Cüzdan Bağla" butonuna tıklayın
-- Freighter cüzdanınızı bağlayın
-- Cüzdan bakiyenizi görün
+### 2. Connect Wallet
+- Click "Connect Wallet" button
+- Connect your Freighter wallet
+- View your wallet balance
 
-### 3. Bağış Yapın
-- "Yardım Oluştur" butonuna tıklayın
-- Bağış miktarını girin (XLM cinsinden)
-- Kategori ve bölge seçin
-- İşlemi onaylayın
+### 3. Make Donation
+- Click "Create Donation" button
+- Enter donation amount (in XLM)
+- Select category and region
+- Confirm transaction
 
-### 4. Bağış Geçmişini Görüntüleyin
-- "Bağış Geçmişi" butonuna tıklayın
-- Tüm bağışlarınızı ve işlem detaylarını görün
-- Blockchain explorer linklerine tıklayarak işlemleri doğrulayın
+### 4. View Donation History
+- Click "Donation History" button
+- View all your donations and transaction details
+- Click blockchain explorer links to verify transactions
 
-## 🏗️ Teknik Detaylar
+## 🏗️ Technical Details
 
-### Stellar Entegrasyonu
+### Stellar Integration
 ```typescript
-// Cüzdan bağlantısı
+// Wallet connection
 const walletInfo = await connectWallet();
 
-// Bağış işlemi
+// Donation transaction
 const donation = await createDonation(amount, category, region);
 
-// Bakiye sorgulama
+// Balance query
 const balance = await getWalletBalance();
 ```
 
-### Kullanılan Teknolojiler
+### Technologies Used
 - **Frontend**: Next.js 15, React 19, TypeScript
 - **Styling**: Tailwind CSS 4
 - **Blockchain**: Stellar SDK, Freighter API
 - **Authentication**: WebAuthn API
 - **State Management**: React Hooks
 
-### Dosya Yapısı
+### File Structure
 ```
 app/
 ├── components/
-│   ├── WalletConnection.tsx    # Cüzdan bağlantı bileşeni
-│   ├── DonationForm.tsx        # Bağış formu
-│   └── DonationHistory.tsx     # Bağış geçmişi
+│   ├── WalletConnection.tsx    # Wallet connection component
+│   ├── DonationForm.tsx        # Donation form
+│   └── DonationHistory.tsx     # Donation history
 ├── utils/
-│   └── stellar.ts             # Stellar blockchain işlemleri
-├── page.tsx                   # Ana sayfa
-└── layout.tsx                 # Uygulama layout'u
+│   └── stellar.ts             # Stellar blockchain operations
+├── page.tsx                   # Main page
+└── layout.tsx                 # Application layout
 ```
 
 ## 🔗 Stellar Testnet
 
-Bu uygulama Stellar testnet kullanmaktadır. Test XLM almak için:
+This application uses Stellar testnet. To get test XLM:
 
-1. [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=testnet) adresine gidin
-2. Test hesabı oluşturun
-3. Freighter cüzdanınıza import edin
+1. Go to [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=testnet)
+2. Create test account
+3. Import to your Freighter wallet
 
-## 📱 Desteklenen Özellikler
+## 📱 Supported Features
 
-### Bağış Kategorileri
-- 💰 Para (XLM)
-- 🧸 Battaniye
-- 🍎 Gıda
-- 👕 Giysi
-- 💊 İlaç
-- 🧽 Temizlik Malzemesi
+### Donation Categories
+- 💰 Money (XLM)
+- 🧸 Blanket
+- 🍎 Food
+- 👕 Clothing
+- 💊 Medicine
+- 🧽 Cleaning Supplies
 
-### Desteklenen Bölgeler
-- İstanbul
+### Supported Regions
+- Istanbul
 - Ankara
-- İzmir
+- Izmir
 - Antalya
 - Bursa
 - Adana
 - Gaziantep
 - Konya
-- Diğer
+- Other
 
-## 🔒 Güvenlik
+## 🔒 Security
 
-- Tüm işlemler Stellar blockchain üzerinde şeffaf olarak gerçekleşir
-- Cüzdan anahtarları asla uygulamada saklanmaz
-- Passkey ile güvenli kimlik doğrulama
-- HTTPS üzerinden güvenli iletişim
+- All transactions are transparently executed on Stellar blockchain
+- Wallet keys are never stored in the application
+- Secure authentication with Passkey
+- Secure communication over HTTPS
 
-## 🚀 Gelecek Özellikler
+## 🚀 Future Features
 
-- [ ] NFT tabanlı yardım onayı
-- [ ] Çoklu dil desteği
-- [ ] Mobil uygulama
-- [ ] Gelişmiş analitik dashboard
-- [ ] Otomatik bakiye güncelleme
-- [ ] Email bildirimleri
+- [ ] NFT-based donation confirmation
+- [ ] Multi-language support
+- [ ] Mobile application
+- [ ] Advanced analytics dashboard
+- [ ] Automatic balance updates
+- [ ] Email notifications
 
-## 🤝 Katkıda Bulunma
+## 🤝 Contributing
 
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Create Pull Request
 
-## 📄 Lisans
+## 📄 License
 
-Bu proje MIT lisansı altında lisanslanmıştır.
+This project is licensed under the MIT License.
 
-## 📞 İletişim
+## 📞 Contact
 
-- Proje Linki: [GitHub Repository]
-- Sorunlar: [GitHub Issues]
+- Project Link: [GitHub Repository]
+- Issues: [GitHub Issues]
 
 ---
 
-**Not**: Bu uygulama geliştirme aşamasındadır ve Stellar testnet kullanmaktadır. Gerçek bağışlar için mainnet entegrasyonu gereklidir.
+**Note**: This application is in development and uses Stellar testnet. Mainnet integration is required for real donations.

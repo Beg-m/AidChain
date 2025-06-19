@@ -33,13 +33,13 @@ export default function Home() {
     setTotalDonations(total.toString());
   };
 
-  // Demo Passkey login (gerçek backend olmadan, sadece WebAuthn API çağrısı)
+  // Demo Passkey login (without real backend, just WebAuthn API call)
   async function handlePasskeyLogin() {
     setLoading(true);
     setError(null);
     try {
-      // Demo amaçlı registration ve authentication akışı
-      // Gerçek uygulamada sunucu ile challenge alınır ve doğrulama yapılır
+      // Demo registration and authentication flow
+      // In real app, challenge would be received from server and verified
       const challenge = btoa(String.fromCharCode(...new Uint8Array(32)));
       await create({
         publicKey: {
@@ -58,7 +58,7 @@ export default function Home() {
       setIsAuthenticated(true);
       setShowLoginModal(false);
     } catch (e: any) {
-      setError("Giriş başarısız veya iptal edildi.");
+      setError("Login failed or was cancelled.");
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ export default function Home() {
         <Image src="/favicon.ico" alt="AidChain Logo" width={64} height={64} />
         <h1 className="text-3xl font-bold mt-4 mb-2 text-blue-700">AidChain</h1>
         <p className="text-lg text-gray-700 max-w-xl text-center">
-          Afet yardımlarında şeffaflık ve güven için Stellar blockchain üzerinde çalışan toplumsal fayda odaklı bağış takip sistemi.
+          A social impact donation tracking system built on Stellar blockchain for transparency and trust in disaster relief.
         </p>
       </header>
 
@@ -92,7 +92,7 @@ export default function Home() {
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow transition-colors w-full"
             onClick={() => setShowLoginModal(true)}
           >
-            Passkey ile Giriş
+            Login with Passkey
           </button>
         ) : (
           <>
@@ -107,11 +107,11 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4 w-full mb-6">
               <div className="bg-white rounded-lg shadow p-4 text-center">
                 <div className="text-2xl font-bold text-blue-600">{donationCount}</div>
-                <div className="text-sm text-gray-600">Toplam Bağış</div>
+                <div className="text-sm text-gray-600">Total Donations</div>
               </div>
               <div className="bg-white rounded-lg shadow p-4 text-center">
                 <div className="text-2xl font-bold text-green-600">{formatXLM(totalDonations)}</div>
-                <div className="text-sm text-gray-600">Toplam XLM</div>
+                <div className="text-sm text-gray-600">Total XLM</div>
               </div>
             </div>
 
@@ -122,13 +122,13 @@ export default function Home() {
                 onClick={() => setShowCreateAidModal(true)}
                 disabled={!walletInfo?.isConnected}
               >
-                {walletInfo?.isConnected ? 'Yardım Oluştur' : 'Cüzdan Bağlayın'}
+                {walletInfo?.isConnected ? 'Create Donation' : 'Connect Wallet'}
               </button>
               <button
                 className="bg-gray-700 hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg shadow transition-colors w-full"
                 onClick={() => setShowDonationHistoryModal(true)}
               >
-                Bağış Geçmişi
+                Donation History
               </button>
               <button
                 className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow w-full mt-2"
@@ -137,7 +137,7 @@ export default function Home() {
                   setWalletInfo(null);
                 }}
               >
-                Çıkış Yap
+                Logout
               </button>
             </div>
           </>
@@ -145,26 +145,26 @@ export default function Home() {
 
         {/* Features Section */}
         <div className="bg-white rounded-lg shadow p-6 mt-8 w-full">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Neden AidChain?</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Why AidChain?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-green-500">✓</span>
-                <span className="text-gray-700">Bağışların zincir üstünde şeffaf takibi</span>
+                <span className="text-gray-700">Transparent donation tracking on blockchain</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-green-500">✓</span>
-                <span className="text-gray-700">Yardım ulaştı NFT onayı</span>
+                <span className="text-gray-700">NFT-based delivery confirmation</span>
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-green-500">✓</span>
-                <span className="text-gray-700">Güvenli ve modern giriş: Passkey</span>
+                <span className="text-gray-700">Secure and modern login: Passkey</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-green-500">✓</span>
-                <span className="text-gray-700">Stellar blockchain entegrasyonu</span>
+                <span className="text-gray-700">Stellar blockchain integration</span>
               </div>
             </div>
           </div>
@@ -172,23 +172,23 @@ export default function Home() {
 
         {/* How it Works */}
         <div className="bg-blue-50 rounded-lg p-6 w-full">
-          <h3 className="text-lg font-semibold mb-4 text-blue-800">Nasıl Çalışır?</h3>
+          <h3 className="text-lg font-semibold mb-4 text-blue-800">How it Works?</h3>
           <div className="space-y-3 text-sm text-blue-700">
             <div className="flex items-start gap-3">
               <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
-              <span>Freighter cüzdanınızı bağlayın</span>
+              <span>Connect your Freighter wallet</span>
             </div>
             <div className="flex items-start gap-3">
               <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
-              <span>Bağış miktarı ve kategorisini seçin</span>
+              <span>Select donation amount and category</span>
             </div>
             <div className="flex items-start gap-3">
               <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
-              <span>Stellar blockchain üzerinde işlemi onaylayın</span>
+              <span>Confirm transaction on Stellar blockchain</span>
             </div>
             <div className="flex items-start gap-3">
               <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</span>
-              <span>Bağışınız şeffaf bir şekilde takip edilsin</span>
+              <span>Track your donation transparently</span>
             </div>
           </div>
         </div>
@@ -199,10 +199,10 @@ export default function Home() {
             <div className="flex items-start gap-3">
               <span className="text-yellow-600 text-lg">ℹ️</span>
               <div>
-                <h4 className="font-semibold text-yellow-800 mb-1">Demo Modu</h4>
+                <h4 className="font-semibold text-yellow-800 mb-1">Demo Mode</h4>
                 <p className="text-yellow-700 text-sm">
-                  Bu uygulama Stellar testnet kullanmaktadır. Gerçek bağışlar için Freighter cüzdanınızda test XLM bulunması gereklidir. 
-                  Test XLM almak için <a href="https://laboratory.stellar.org/#account-creator?network=testnet" target="_blank" rel="noopener noreferrer" className="underline">Stellar Laboratory</a>'yi kullanabilirsiniz.
+                  This application uses Stellar testnet. For real donations, you need test XLM in your Freighter wallet. 
+                  You can get test XLM from <a href="https://laboratory.stellar.org/#account-creator?network=testnet" target="_blank" rel="noopener noreferrer" className="underline">Stellar Laboratory</a>.
                 </p>
               </div>
             </div>
@@ -214,22 +214,22 @@ export default function Home() {
       {showLoginModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-4 text-blue-700">Passkey ile Giriş</h2>
-            <p className="text-gray-700 mb-6 text-center">Güvenli giriş için Passkey kullanın.</p>
+            <h2 className="text-xl font-bold mb-4 text-blue-700">Login with Passkey</h2>
+            <p className="text-gray-700 mb-6 text-center">Use Passkey for secure login.</p>
             {error && <div className="text-red-600 mb-2">{error}</div>}
             <button
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow w-full mb-2 disabled:opacity-60"
               onClick={handlePasskeyLogin}
               disabled={loading}
             >
-              {loading ? "Giriş Yapılıyor..." : "Passkey ile Giriş Yap"}
+              {loading ? "Logging in..." : "Login with Passkey"}
             </button>
             <button
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow w-full"
               onClick={() => setShowLoginModal(false)}
               disabled={loading}
             >
-              Kapat
+              Close
             </button>
           </div>
         </div>

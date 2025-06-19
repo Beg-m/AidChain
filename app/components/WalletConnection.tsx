@@ -44,7 +44,7 @@ export default function WalletConnection({
       onWalletConnected(walletInfo);
       setBalance(walletInfo.balance);
     } catch (error: any) {
-      setError(error.message || 'Cüzdan bağlantısı başarısız oldu.');
+      setError(error.message || 'Wallet connection failed.');
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export default function WalletConnection({
       onWalletDisconnected();
       setBalance('0');
     } catch (error: any) {
-      setError(error.message || 'Cüzdan bağlantısı kesilirken hata oluştu.');
+      setError(error.message || 'Error disconnecting wallet.');
     } finally {
       setLoading(false);
     }
@@ -68,12 +68,12 @@ export default function WalletConnection({
       <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-green-800">Cüzdan Bağlı</h3>
+            <h3 className="text-lg font-semibold text-green-800">Wallet Connected</h3>
             <p className="text-sm text-green-600">
-              Adres: {walletInfo.publicKey.slice(0, 8)}...{walletInfo.publicKey.slice(-8)}
+              Address: {walletInfo.publicKey.slice(0, 8)}...{walletInfo.publicKey.slice(-8)}
             </p>
             <p className="text-sm text-green-600">
-              Bakiye: {formatXLM(balance)} XLM
+              Balance: {formatXLM(balance)} XLM
             </p>
           </div>
           <button
@@ -81,7 +81,7 @@ export default function WalletConnection({
             disabled={loading}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
           >
-            {loading ? 'Bağlantı Kesiliyor...' : 'Bağlantıyı Kes'}
+            {loading ? 'Disconnecting...' : 'Disconnect'}
           </button>
         </div>
         {error && (
@@ -95,9 +95,9 @@ export default function WalletConnection({
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-blue-800">Stellar Cüzdan Bağlantısı</h3>
+          <h3 className="text-lg font-semibold text-blue-800">Stellar Wallet Connection</h3>
           <p className="text-sm text-blue-600">
-            Bağış yapmak için Freighter cüzdanınızı bağlayın
+            Connect your Freighter wallet to make donations
           </p>
         </div>
         <button
@@ -105,7 +105,7 @@ export default function WalletConnection({
           disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
         >
-          {loading ? 'Bağlanıyor...' : 'Cüzdan Bağla'}
+          {loading ? 'Connecting...' : 'Connect Wallet'}
         </button>
       </div>
       {error && (
