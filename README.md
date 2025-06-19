@@ -168,8 +168,8 @@ This project is licensed under the MIT License.
 
 ## 📞 Contact
 
-- Project Link: [GitHub Repository]
-- Issues: [GitHub Issues]
+- Project Link: https://github.com/Beg-m/AidChain
+- Issues: https://github.com/Beg-m/AidChain/issues
 
 ---
 
