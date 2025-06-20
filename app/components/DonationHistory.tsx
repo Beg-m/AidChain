@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getDonationHistory, DonationData, formatXLM, WalletInfo } from '../utils/stellar';
+import { getDonationHistory, confirmDelivery, DonationData, formatXLM, WalletInfo } from '../utils/stellar';
 import { demoDonations } from '../utils/demoData';
 
 interface DonationHistoryProps {
@@ -14,6 +14,7 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
   const [donations, setDonations] = useState<DonationData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -42,6 +43,24 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
     }
   };
 
+  const handleConfirmDelivery = async (donationId: string) => {
+    setConfirmingId(donationId);
+    try {
+      await confirmDelivery(donationId);
+      // Refresh the list - if wallet is connected, reload from chain, otherwise refresh demo data
+      if (walletInfo?.publicKey) {
+        await loadDonationHistory(walletInfo.publicKey);
+      } else {
+        setDonations(demoDonations);
+      }
+    } catch (error) {
+      console.error('Error confirming delivery:', error);
+      alert('Failed to confirm delivery.');
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
   const formatDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleString('en-US', {
       year: 'numeric',
@@ -60,6 +79,8 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
         return 'text-yellow-600 bg-yellow-100';
       case 'failed':
         return 'text-red-600 bg-red-100';
+      case 'delivered':
+        return 'text-indigo-600 bg-indigo-100';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -73,6 +94,8 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
         return 'Pending';
       case 'failed':
         return 'Failed';
+      case 'delivered':
+        return 'Delivered';
       default:
         return 'Unknown';
     }
@@ -93,7 +116,7 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
       case 'cleaning':
         return 'Cleaning Supplies';
       default:
-        return category;
+        return category.charAt(0).toUpperCase() + category.slice(1);
     }
   };
 
@@ -118,7 +141,7 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
       case 'other':
         return 'Other';
       default:
-        return region;
+        return region.charAt(0).toUpperCase() + region.slice(1);
     }
   };
 
@@ -129,13 +152,17 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-blue-700">Donation History</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-          >
-            ×
-          </button>
-          <span className={`ml-4 px-3 py-1 rounded-full text-xs font-semibold ${walletInfo?.publicKey ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{walletInfo?.publicKey ? 'On-Chain Data' : 'Demo Data'}</span>
+          <div className="flex items-center gap-2">
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${walletInfo?.publicKey ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+              {walletInfo?.publicKey ? 'On-Chain Data' : 'Demo Data'}
+            </span>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -186,9 +213,18 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
                         </div>
                       </div>
                     </div>
+                    {donation.status === 'completed' && (
+                      <button
+                        onClick={() => handleConfirmDelivery(donation.id)}
+                        disabled={confirmingId === donation.id}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50"
+                      >
+                        {confirmingId === donation.id ? 'Confirming...' : 'Confirm Delivery'}
+                      </button>
+                    )}
                   </div>
                   
-                  <div className="border-t border-gray-100 pt-3">
+                  <div className="border-t border-gray-100 pt-3 space-y-2">
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span>Transaction Hash:</span>
                       <a
@@ -200,6 +236,12 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
                         {donation.transactionHash.slice(0, 16)}...{donation.transactionHash.slice(-16)}
                       </a>
                     </div>
+                    {donation.deliveryNftId && (
+                       <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>Delivery NFT ID:</span>
+                        <span className="font-mono text-indigo-600">{donation.deliveryNftId}</span>
+                       </div>
+                    )}
                   </div>
                 </div>
               ))}

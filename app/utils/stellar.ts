@@ -16,8 +16,9 @@ export interface DonationData {
   region: string;
   timestamp: string;
   transactionHash: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: 'pending' | 'completed' | 'failed' | 'delivered';
   donorAddress: string;
+  deliveryNftId?: string; // Optional field for the NFT ID
 }
 
 export interface WalletInfo {
@@ -61,89 +62,92 @@ export const disconnectWallet = async (): Promise<void> => {
   // No disconnect method in new Freighter API
 };
 
-// Create donation transaction (XDR creation and signing, submission via API)
+// DUMMY: Create donation transaction for demo purposes
 export const createDonation = async (
   amount: string,
   category: string,
-  region: string,
-  recipientAddress: string = 'GCNY5OXYSY4FKHOPT2SPOQZAOEIGXB5LBYW3HVU3OWSTQITS65M5RCNY' // Demo recipient
+  region: string
 ): Promise<DonationData> => {
   try {
-    // 1. Kullanıcı adresini al
     const { address: publicKey } = await freighterApi.getAddress();
-
-    // 2. Stellar sunucusuna bağlan
-    const server = new StellarSdk.Server(HORIZON_URL);
-    const account = await server.loadAccount(publicKey);
-
-    // 3. İşlem oluştur
-    const fee = await server.fetchBaseFee();
-    const transaction = new StellarSdk.TransactionBuilder(account, {
-      fee: fee.toString(),
-      networkPassphrase: StellarSdk.Networks.TESTNET,
-    })
-      .addOperation(
-        StellarSdk.Operation.payment({
-          destination: recipientAddress,
-          asset: StellarSdk.Asset.native(),
-          amount: amount.toString(),
-        })
-      )
-      .setTimeout(30)
-      .build();
-
-    // 4. İşlemi XDR olarak serialize et
-    const xdr = transaction.toXDR();
-
-    // 5. Freighter ile imzala
-    const signedXDR = await freighterApi.signTransaction(xdr, {
-      network: 'TESTNET',
-    });
-
-    // 6. İşlemi gönder
-    const tx = StellarSdk.TransactionBuilder.fromXDR(signedXDR, StellarSdk.Networks.TESTNET);
-    const result = await server.submitTransaction(tx);
-
-    // 7. DonationData objesi oluştur
-    const donation: DonationData = {
-      id: result.hash,
+    
+    const newDonation: DonationData = {
+      id: `demo-${Date.now()}`,
       amount,
       category,
       region,
       timestamp: new Date().toISOString(),
-      transactionHash: result.hash,
-      status: 'completed',
+      transactionHash: `dummy_tx_${Date.now()}` + Math.random().toString(36).substring(2, 15),
+      status: 'completed', // For demo, assume it's completed instantly
       donorAddress: publicKey,
     };
-    return donation;
+
+    const existingDonations = await getDonationHistory();
+    localStorage.setItem('donations', JSON.stringify([newDonation, ...existingDonations]));
+
+    return newDonation;
   } catch (error: any) {
     console.error('Donation creation error:', error);
     throw new Error(error?.message || 'Donation transaction failed.');
   }
 };
 
-// Get donation history (on-chain)
-export const getDonationHistory = async (publicKey: string): Promise<DonationData[]> => {
+// Get donation history (supports both demo and on-chain data)
+export const getDonationHistory = async (publicKey?: string): Promise<DonationData[]> => {
   try {
-    const server = new StellarSdk.Server(HORIZON_URL);
-    // Sadece gönderici olduğu işlemleri çek
-    const payments = await server.payments().forAccount(publicKey).order('desc').limit(20).call();
-    const donations: DonationData[] = payments.records
-      .filter((op: any) => op.type === 'payment' && op.asset_type === 'native' && op.from === publicKey)
-      .map((op: any) => ({
-        id: op.id,
-        amount: op.amount,
-        category: 'money', // On-chain'den kategori bilgisi alınamaz, default 'money'
-        region: 'unknown', // On-chain'den bölge bilgisi alınamaz, default 'unknown'
-        timestamp: op.created_at,
-        transactionHash: op.transaction_hash,
-        status: 'completed',
-        donorAddress: op.from,
-      }));
-    return donations;
+    // If publicKey is provided, try to get on-chain data
+    if (publicKey) {
+      const server = new StellarSdk.Server(HORIZON_URL);
+      const payments = await server.payments().forAccount(publicKey).order('desc').limit(20).call();
+      const donations: DonationData[] = payments.records
+        .filter((op: any) => op.type === 'payment' && op.asset_type === 'native' && op.from === publicKey)
+        .map((op: any) => ({
+          id: op.id,
+          amount: op.amount,
+          category: 'money', // On-chain'den kategori bilgisi alınamaz, default 'money'
+          region: 'unknown', // On-chain'den bölge bilgisi alınamaz, default 'unknown'
+          timestamp: op.created_at,
+          transactionHash: op.transaction_hash,
+          status: 'completed',
+          donorAddress: op.from,
+        }));
+      return donations;
+    } else {
+      // Fallback to demo data from localStorage
+      const donations = localStorage.getItem('donations');
+      return donations ? JSON.parse(donations) : [];
+    }
   } catch (error) {
-    console.error('Error loading on-chain donation history:', error);
-    return [];
+    console.error('Error loading donation history:', error);
+    // Fallback to demo data if on-chain fails
+    const donations = localStorage.getItem('donations');
+    return donations ? JSON.parse(donations) : [];
+  }
+};
+
+// DUMMY: Confirm delivery and create a fake NFT ID
+export const confirmDelivery = async (donationId: string): Promise<DonationData> => {
+  try {
+    const donations = await getDonationHistory();
+    const donationIndex = donations.findIndex((d: DonationData) => d.id === donationId);
+
+    if (donationIndex === -1) {
+      throw new Error('Donation not found');
+    }
+
+    const updatedDonation = {
+      ...donations[donationIndex],
+      status: 'delivered' as const,
+      deliveryNftId: `nft-aid-${Date.now()}`
+    };
+
+    donations[donationIndex] = updatedDonation;
+    localStorage.setItem('donations', JSON.stringify(donations));
+
+    return updatedDonation;
+  } catch (error) {
+    console.error('Error confirming delivery:', error);
+    throw error;
   }
 };
 
