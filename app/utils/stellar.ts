@@ -205,6 +205,17 @@ export const createDonation = async (
   try {
     const { address: publicKey } = await freighterApi.getAddress();
     
+    // Update demo balance if it exists
+    const currentDemoBalance = getDemoBalance();
+    if (currentDemoBalance !== '0') {
+      const newBalance = parseFloat(currentDemoBalance) - parseFloat(amount);
+      if (newBalance >= 0) {
+        localStorage.setItem('demoBalance', newBalance.toString());
+      } else {
+        throw new Error('Insufficient demo balance');
+      }
+    }
+    
     const newDonation: DonationData = {
       id: `demo-${Date.now()}`,
       amount,
@@ -287,8 +298,19 @@ export const confirmDelivery = async (donationId: string): Promise<DonationData>
 
 // Get wallet balance (should be via API route)
 export const getWalletBalance = async (): Promise<string> => {
-  // TODO: Implement via API route
-  return '0';
+  try {
+    // First check if there's a demo balance
+    const demoBalance = getDemoBalance();
+    if (demoBalance !== '0') {
+      return demoBalance;
+    }
+    
+    // TODO: Implement via API route for real balance
+    return '0';
+  } catch (error) {
+    console.error('Error getting wallet balance:', error);
+    return '0';
+  }
 };
 
 // Format XLM amount for display
@@ -318,4 +340,31 @@ export const xlmToStroops = (xlm: string): string => {
 export const stroopsToXlm = (stroops: string): string => {
   const amount = BigInt(stroops);
   return (Number(amount) / 10000000).toString();
+};
+
+// Demo function to load XLM balance for testing
+export const loadDemoBalance = async (amount: string = '10000'): Promise<string> => {
+  try {
+    // Store demo balance in localStorage
+    localStorage.setItem('demoBalance', amount);
+    
+    // Update wallet info if connected
+    const { address: publicKey } = await freighterApi.getAddress();
+    const walletInfo: WalletInfo = {
+      publicKey,
+      isConnected: true,
+      balance: amount
+    };
+    
+    console.log(`Demo balance loaded: ${formatXLM(amount)} XLM`);
+    return amount;
+  } catch (error) {
+    console.error('Error loading demo balance:', error);
+    throw new Error('Failed to load demo balance');
+  }
+};
+
+// Get demo balance from localStorage
+export const getDemoBalance = (): string => {
+  return localStorage.getItem('demoBalance') || '0';
 }; 

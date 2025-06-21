@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { connectWallet, disconnectWallet, getWalletBalance, formatXLM, WalletInfo } from '../utils/stellar';
+import { connectWallet, disconnectWallet, getWalletBalance, formatXLM, WalletInfo, loadDemoBalance } from '../utils/stellar';
 
 interface WalletConnectionProps {
   onWalletConnected: (walletInfo: WalletInfo) => void;
@@ -15,6 +15,7 @@ export default function WalletConnection({
   walletInfo 
 }: WalletConnectionProps) {
   const [loading, setLoading] = useState(false);
+  const [loadingDemo, setLoadingDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>('0');
 
@@ -60,6 +61,28 @@ export default function WalletConnection({
       setError(error.message || 'Error disconnecting wallet.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLoadDemoBalance = async () => {
+    setLoadingDemo(true);
+    setError(null);
+    try {
+      const demoBalance = await loadDemoBalance('10000');
+      setBalance(demoBalance);
+      
+      // Update wallet info with demo balance
+      if (walletInfo) {
+        const updatedWalletInfo: WalletInfo = {
+          ...walletInfo,
+          balance: demoBalance
+        };
+        onWalletConnected(updatedWalletInfo);
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to load demo balance.');
+    } finally {
+      setLoadingDemo(false);
     }
   };
 
@@ -120,7 +143,7 @@ export default function WalletConnection({
 
   return (
     <div className="glass p-6 border border-blue-500/30 rounded-lg">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-3 h-3 bg-blue-400 rounded-full pulse"></div>
@@ -146,6 +169,37 @@ export default function WalletConnection({
             <span>🔗 Connect Wallet</span>
           )}
         </button>
+      </div>
+
+      {/* Demo Balance Loading Button */}
+      <div className="border-t border-blue-500/20 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-3 h-3 bg-yellow-400 rounded-full pulse"></div>
+              <h4 className="text-lg font-semibold text-yellow-400">Demo Mode</h4>
+            </div>
+            
+            <p className="text-gray-300 text-sm">
+              Load demo balance for testing donations without real XLM
+            </p>
+          </div>
+          
+          <button
+            onClick={handleLoadDemoBalance}
+            disabled={loadingDemo}
+            className="glass px-6 py-3 text-yellow-300 hover:text-yellow-200 border border-yellow-500/30 hover:border-yellow-500/50 rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50"
+          >
+            {loadingDemo ? (
+              <div className="flex items-center gap-2">
+                <div className="spinner"></div>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              <span>💰 Load 10,000 XLM Demo</span>
+            )}
+          </button>
+        </div>
       </div>
       
       {error && (
