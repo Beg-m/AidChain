@@ -65,51 +65,96 @@ export default function WalletConnection({
 
   if (walletInfo?.isConnected) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+      <div className="glass p-6 border border-green-500/30 rounded-lg">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-green-800">Wallet Connected</h3>
-            <p className="text-sm text-green-600">
-              Address: {walletInfo.publicKey.slice(0, 8)}...{walletInfo.publicKey.slice(-8)}
-            </p>
-            <p className="text-sm text-green-600">
-              Balance: {formatXLM(balance)} XLM
-            </p>
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-3 h-3 bg-green-400 rounded-full pulse"></div>
+              <h3 className="text-xl font-semibold text-green-400">Wallet Connected</h3>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 text-sm">Address:</span>
+                <span className="text-gray-300 text-sm font-mono">
+                  {walletInfo.publicKey.slice(0, 8)}...{walletInfo.publicKey.slice(-8)}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 text-sm">Balance:</span>
+                <span className="text-green-400 text-lg font-bold">
+                  {formatXLM(balance)} XLM
+                </span>
+              </div>
+            </div>
           </div>
+          
           <button
             onClick={handleDisconnect}
             disabled={loading}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+            className="glass px-6 py-3 text-red-300 hover:text-red-200 border border-red-500/30 hover:border-red-500/50 rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50"
           >
-            {loading ? 'Disconnecting...' : 'Disconnect'}
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="spinner"></div>
+                <span>Disconnecting...</span>
+              </div>
+            ) : (
+              <span>🔌 Disconnect</span>
+            )}
           </button>
         </div>
+        
         {error && (
-          <div className="mt-2 text-red-600 text-sm">{error}</div>
+          <div className="mt-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-400 rounded-full pulse"></div>
+              <p className="text-red-300 text-sm">{error}</p>
+            </div>
+          </div>
         )}
       </div>
     );
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+    <div className="glass p-6 border border-blue-500/30 rounded-lg">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-blue-800">Stellar Wallet Connection</h3>
-          <p className="text-sm text-blue-600">
-            Connect your Freighter wallet to make donations
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-3 h-3 bg-blue-400 rounded-full pulse"></div>
+            <h3 className="text-xl font-semibold text-blue-400">Stellar Wallet Connection</h3>
+          </div>
+          
+          <p className="text-gray-300 text-sm">
+            Connect your Freighter wallet to make secure blockchain donations
           </p>
         </div>
+        
         <button
           onClick={handleConnect}
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+          className="btn-primary px-6 py-3 text-sm font-medium glow disabled:opacity-50"
         >
-          {loading ? 'Connecting...' : 'Connect Wallet'}
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <div className="spinner"></div>
+              <span>Connecting...</span>
+            </div>
+          ) : (
+            <span>🔗 Connect Wallet</span>
+          )}
         </button>
       </div>
+      
       {error && (
-        <div className="mt-2 text-red-600 text-sm">{error}</div>
+        <div className="mt-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-red-400 rounded-full pulse"></div>
+            <p className="text-red-300 text-sm">{error}</p>
+          </div>
+        </div>
       )}
     </div>
   );
