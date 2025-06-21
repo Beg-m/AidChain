@@ -157,7 +157,7 @@ scripts/
 
 This application uses Stellar testnet. To get test XLM:
 
-1. Go to [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=testnet)
+1. Go to [Stellar Laboratory](https://laboratory.stellar.org/)
 2. Create test account
 3. Import to your Freighter wallet
 
@@ -184,25 +184,21 @@ This application uses Stellar testnet. To get test XLM:
 
 ## 🔒 Security
 
-- All transactions are transparently executed on Stellar blockchain
-- Smart contracts provide immutable and verifiable donation tracking
-- Wallet keys are never stored in the application
-- Secure authentication with Passkey
-- Secure communication over HTTPS
-- NFT-based delivery confirmation
+* All transactions are transparently executed on Stellar blockchain
+* Wallet keys are never stored in the application
+* Secure authentication with Passkey
+* Secure communication over HTTPS
+* Smart contract code is open source and auditable
 
 ## 🚀 Future Features
 
-- [x] Smart contract integration
-- [x] Advanced donation tracking
-- [x] NFT-based delivery confirmation
-- [ ] Multi-language support
-- [ ] Mobile application
-- [ ] Advanced analytics dashboard
-- [ ] Automatic balance updates
-- [ ] Email notifications
-- [ ] Multi-signature wallets
-- [ ] Automated fund distribution
+* NFT-based donation confirmation
+* Multi-language support
+* Mobile application
+* Advanced analytics dashboard
+* Automatic balance updates
+* Email notifications
+* Smart contract upgrades
 
 ## 🤝 Contributing
 
@@ -218,9 +214,9 @@ This project is licensed under the MIT License.
 
 ## 📞 Contact
 
-- Project Link: https://github.com/Beg-m/AidChain
-- Issues: https://github.com/Beg-m/AidChain/issues
+* Project Link: [https://github.com/Beg-m/AidChain](https://github.com/Beg-m/AidChain)
+* Issues: [https://github.com/Beg-m/AidChain/issues](https://github.com/Beg-m/AidChain/issues)
 
 ---
 
-**Note**: This application is in development and uses Stellar testnet. Mainnet integration is required for real donations. Smart contracts provide additional security and transparency features.
+**Note**: This application is in development and uses Stellar testnet. Mainnet integration is required for real donations.
