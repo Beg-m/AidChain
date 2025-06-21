@@ -14,6 +14,7 @@ export interface DonationData {
   amount: string;
   category: string;
   region: string;
+  organization: string;
   timestamp: string;
   transactionHash: string;
   status: 'pending' | 'completed' | 'failed' | 'delivered';
@@ -66,7 +67,8 @@ export const disconnectWallet = async (): Promise<void> => {
 export const createDonation = async (
   amount: string,
   category: string,
-  region: string
+  region: string,
+  organization: string
 ): Promise<DonationData> => {
   try {
     const { address: publicKey } = await freighterApi.getAddress();
@@ -76,6 +78,7 @@ export const createDonation = async (
       amount,
       category,
       region,
+      organization,
       timestamp: new Date().toISOString(),
       transactionHash: `dummy_tx_${Date.now()}` + Math.random().toString(36).substring(2, 15),
       status: 'completed', // For demo, assume it's completed instantly
@@ -106,6 +109,7 @@ export const getDonationHistory = async (publicKey?: string): Promise<DonationDa
           amount: op.amount,
           category: 'money', // On-chain'den kategori bilgisi alınamaz, default 'money'
           region: 'unknown', // On-chain'den bölge bilgisi alınamaz, default 'unknown'
+          organization: 'unknown', // On-chain'den kurum bilgisi alınamaz, default 'unknown'
           timestamp: op.created_at,
           transactionHash: op.transaction_hash,
           status: 'completed',
