@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { create, get } from "@github/webauthn-json";
 import WalletConnection from "./components/WalletConnection";
 import DonationForm from "./components/DonationForm";
 import DonationHistory from "./components/DonationHistory";
@@ -10,10 +9,8 @@ import { WalletInfo, getDonationHistory, formatXLM } from "./utils/stellar";
 import { populateDemoData } from "./utils/demoData";
 
 export default function Home() {
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCreateAidModal, setShowCreateAidModal] = useState(false);
   const [showDonationHistoryModal, setShowDonationHistoryModal] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
@@ -35,6 +32,12 @@ export default function Home() {
     populateDemoData(); // Populate demo data if empty
     if (walletInfo?.publicKey) {
       updateDonationStats(walletInfo.publicKey);
+    } else {
+        // demo data stats
+        const donations = JSON.parse(localStorage.getItem('donations') || '[]');
+        setDonationCount(donations.length);
+        const total = donations.reduce((sum: number, d: { amount: string; }) => sum + parseFloat(d.amount), 0);
+        setTotalDonations(total.toString());
     }
   }, [walletInfo]);
 
@@ -50,74 +53,6 @@ export default function Home() {
     }
   };
 
-  // Demo Passkey login (without real backend, just WebAuthn API call)
-  async function handlePasskeyLogin() {
-    setLoading(true);
-    setError(null);
-    try {
-      const credentialId = localStorage.getItem("passkeyCredentialId");
-      if (!credentialId) {
-        throw new Error("No passkey registered. Please register first.");
-      }
-
-      // In a real app, challenge would be from the server
-      const auth = await get({
-        publicKey: {
-          challenge: btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))),
-          timeout: 60000,
-          allowCredentials: [{
-            id: credentialId,
-            type: "public-key",
-          }],
-          userVerification: "preferred",
-        },
-      });
-
-      // In a real app, you'd send `auth` to your server for verification.
-      setIsAuthenticated(true);
-      setShowLoginModal(false);
-    } catch (e: any) {
-      console.error(e);
-      setError(`Login failed: ${e.message}`);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Demo Passkey registration (without real backend, just WebAuthn API call)
-  async function handlePasskeyRegister() {
-    setLoading(true);
-    setError(null);
-    try {
-      // In a real app, challenge and user info would come from the server
-      const cred = await create({
-        publicKey: {
-          challenge: btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))),
-          rp: { name: "AidChain" },
-          user: {
-            id: "user-id-from-server", // This should be a unique user ID
-            name: "demo@aidchain.com",
-            displayName: "Demo User",
-          },
-          pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-          timeout: 60000,
-          attestation: "none",
-        },
-      });
-
-      // For this demo, we store the new credential ID in localStorage.
-      // In a real app, you'd send `cred` to your server for verification and storage.
-      localStorage.setItem("passkeyCredentialId", cred.id);
-
-      setError("Registration successful! You can now login.");
-    } catch (e: any) {
-      console.error(e);
-      setError(`Registration failed: ${e.message}`);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   const handleWalletConnected = (info: WalletInfo) => {
     setWalletInfo(info);
   };
@@ -129,6 +64,11 @@ export default function Home() {
   const handleDonationSuccess = () => {
     if (walletInfo?.publicKey) {
       updateDonationStats(walletInfo.publicKey);
+    } else {
+        const donations = JSON.parse(localStorage.getItem('donations') || '[]');
+        setDonationCount(donations.length);
+        const total = donations.reduce((sum: number, d: { amount: string; }) => sum + parseFloat(d.amount), 0);
+        setTotalDonations(total.toString());
     }
   };
 
@@ -189,102 +129,65 @@ export default function Home() {
 
         {/* Main Actions */}
         <main className="flex flex-col items-center gap-8 w-full max-w-4xl">
-          {!isAuthenticated ? (
-            <div className="glass-card p-8 w-full max-w-md text-center">
-              <h2 className="text-2xl font-semibold mb-6 gradient-text">
-                Join the Revolution
-              </h2>
+          <>
+            {/* Wallet Connection */}
+            <div className="glass-card p-6 w-full">
+              <WalletConnection
+                onWalletConnected={handleWalletConnected}
+                onWalletDisconnected={handleWalletDisconnected}
+                walletInfo={walletInfo}
+              />
+            </div>
+
+            {/* Statistics Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+              <div className="glass-card p-6 text-center card-hover">
+                <div className="text-4xl font-bold gradient-text mb-2">{donationCount}</div>
+                <div className="text-gray-400 text-sm">Total Donations</div>
+                <div className="mt-2 text-xs text-gray-500">Tracked on Blockchain</div>
+              </div>
+              
+              <div className="glass-card p-6 text-center card-hover">
+                <div className="text-4xl font-bold text-green-400 mb-2">
+                  {formatXLM(totalDonations)}
+                </div>
+                <div className="text-gray-400 text-sm">Total XLM</div>
+                <div className="mt-2 text-xs text-gray-500">Crypto Donations</div>
+              </div>
+              
+              <div className="glass-card p-6 text-center card-hover">
+                <div className="text-4xl font-bold text-purple-400 mb-2">
+                  {walletInfo?.isConnected ? '✓' : '○'}
+                </div>
+                <div className="text-gray-400 text-sm">Wallet Status</div>
+                <div className="mt-2 text-xs text-gray-500">
+                  {walletInfo?.isConnected ? 'Connected' : 'Disconnected'}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col md:flex-row gap-4 w-full">
               <button
-                className="btn-primary w-full text-lg py-4 glow"
-                onClick={() => setShowLoginModal(true)}
+                className="flex-1 btn-primary text-lg py-4 glow disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setShowCreateAidModal(true)}
+                disabled={!walletInfo?.isConnected}
               >
-                {loading ? (
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="spinner"></div>
-                    <span>Connecting...</span>
-                  </div>
+                {walletInfo?.isConnected ? (
+                  <span>💝 Create Donation</span>
                 ) : (
-                  <span>🔐 Login with Passkey</span>
+                  <span>🔗 Connect Wallet First</span>
                 )}
               </button>
               
-              {error && (
-                <div className="mt-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
-                  <p className="text-red-300 text-sm">{error}</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              {/* Wallet Connection */}
-              <div className="glass-card p-6 w-full">
-                <WalletConnection
-                  onWalletConnected={handleWalletConnected}
-                  onWalletDisconnected={handleWalletDisconnected}
-                  walletInfo={walletInfo}
-                />
-              </div>
-
-              {/* Statistics Dashboard */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                <div className="glass-card p-6 text-center card-hover">
-                  <div className="text-4xl font-bold gradient-text mb-2">{donationCount}</div>
-                  <div className="text-gray-400 text-sm">Total Donations</div>
-                  <div className="mt-2 text-xs text-gray-500">Tracked on Blockchain</div>
-                </div>
-                
-                <div className="glass-card p-6 text-center card-hover">
-                  <div className="text-4xl font-bold text-green-400 mb-2">
-                    {formatXLM(totalDonations)}
-                  </div>
-                  <div className="text-gray-400 text-sm">Total XLM</div>
-                  <div className="mt-2 text-xs text-gray-500">Crypto Donations</div>
-                </div>
-                
-                <div className="glass-card p-6 text-center card-hover">
-                  <div className="text-4xl font-bold text-purple-400 mb-2">
-                    {walletInfo?.isConnected ? '✓' : '○'}
-                  </div>
-                  <div className="text-gray-400 text-sm">Wallet Status</div>
-                  <div className="mt-2 text-xs text-gray-500">
-                    {walletInfo?.isConnected ? 'Connected' : 'Disconnected'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col md:flex-row gap-4 w-full">
-                <button
-                  className="flex-1 btn-primary text-lg py-4 glow disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowCreateAidModal(true)}
-                  disabled={!walletInfo?.isConnected}
-                >
-                  {walletInfo?.isConnected ? (
-                    <span>💝 Create Donation</span>
-                  ) : (
-                    <span>🔗 Connect Wallet First</span>
-                  )}
-                </button>
-                
-                <button
-                  className="flex-1 glass px-6 py-4 text-lg font-semibold border border-white/20 hover:border-white/40 transition-all duration-300 card-hover"
-                  onClick={() => setShowDonationHistoryModal(true)}
-                >
-                  📊 Donation History
-                </button>
-              </div>
-
               <button
-                className="glass px-6 py-3 text-gray-300 hover:text-white transition-colors duration-300"
-                onClick={() => {
-                  setIsAuthenticated(false);
-                  setWalletInfo(null);
-                }}
+                className="flex-1 glass px-6 py-4 text-lg font-semibold border border-white/20 hover:border-white/40 transition-all duration-300 card-hover"
+                onClick={() => setShowDonationHistoryModal(true)}
               >
-                🚪 Logout
+                📊 Donation History
               </button>
-            </>
-          )}
+            </div>
+          </>
 
           {/* Features Section */}
           <div className="glass-card p-8 w-full mt-12">
@@ -345,55 +248,12 @@ export default function Home() {
         </main>
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-gray-500 text-sm">
-          <p>Built with ❤️ for humanitarian aid transparency</p>
-          <p className="mt-2">Powered by Stellar Blockchain Technology</p>
+        <footer className="text-center mt-12 text-gray-500 text-sm">
+          <p>Powered by Stellar Blockchain Technology</p>
         </footer>
       </div>
 
       {/* Modals */}
-      {showLoginModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass-card p-8 w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-6 gradient-text text-center">
-              Welcome to AidChain
-            </h2>
-            
-            <div className="space-y-4">
-              <button
-                className="w-full btn-primary py-3"
-                onClick={handlePasskeyLogin}
-                disabled={loading}
-              >
-                {loading ? 'Logging in...' : '🔐 Login with Passkey'}
-              </button>
-              
-              <button
-                className="w-full glass py-3 border border-white/20 hover:border-white/40 transition-colors"
-                onClick={handlePasskeyRegister}
-                disabled={loading}
-              >
-                {loading ? 'Registering...' : '📝 Register New Passkey'}
-              </button>
-              
-              <button
-                className="w-full text-gray-400 hover:text-white transition-colors py-2"
-                onClick={() => setShowLoginModal(false)}
-                disabled={loading}
-              >
-                Cancel
-              </button>
-            </div>
-            
-            {error && (
-              <div className="mt-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
-                <p className="text-red-300 text-sm">{error}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       <DonationForm
         isOpen={showCreateAidModal}
         onClose={() => setShowCreateAidModal(false)}

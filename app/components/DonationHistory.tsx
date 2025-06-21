@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getDonationHistory, confirmDelivery, DonationData, formatXLM, WalletInfo } from '../utils/stellar';
+import { getDonationHistory, DonationData, formatXLM, WalletInfo } from '../utils/stellar';
 import { demoDonations } from '../utils/demoData';
 
 interface DonationHistoryProps {
@@ -43,22 +43,9 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
     }
   };
 
-  const handleConfirmDelivery = async (donationId: string) => {
-    setConfirmingId(donationId);
-    try {
-      await confirmDelivery(donationId);
-      // Refresh the list - if wallet is connected, reload from chain, otherwise refresh demo data
-      if (walletInfo?.publicKey) {
-        await loadDonationHistory(walletInfo.publicKey);
-      } else {
-        setDonations(demoDonations);
-      }
-    } catch (error) {
-      console.error('Error confirming delivery:', error);
-      alert('Failed to confirm delivery.');
-    } finally {
-      setConfirmingId(null);
-    }
+  const handleConfirm = async (donationId: string) => {
+    // This functionality is currently placeholder and will be fully implemented later.
+    alert(`Confirmation for donation ${donationId} is a feature in development.`);
   };
 
   const formatDate = (timestamp: string) => {
@@ -164,6 +151,27 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
     }
   };
 
+  const getOrganizationText = (organization: string) => {
+    switch (organization) {
+      case 'afad': return 'AFAD';
+      case 'kizilay': return 'Kızılay';
+      case 'akut': return 'AKUT';
+      case 'ahbap': return 'Ahbap Derneği';
+      case 'ihh': return 'İHH';
+      case 'deniz-feneri': return 'Deniz Feneri Derneği';
+      case 'hayata-destek': return 'Hayata Destek Derneği';
+      case 'mazlumder': return 'Mazlumder';
+      case 'and': return 'AND';
+      case 'tider': return 'TİDER';
+      case 'sadakatasi': return 'Sadakataşı Derneği';
+      case 'besir': return 'Beşir Derneği';
+      case 'corbada-tuzun-olsun': return 'Çorbada Tuzun Olsun Derneği';
+      case 'acdc': return 'ACDC';
+      case 'ilk-umut': return 'İlk Umut Derneği';
+      default: return organization;
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -241,9 +249,13 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
                           <h3 className="text-2xl font-bold text-white">
                             {formatXLM(donation.amount)} XLM
                           </h3>
-                          <p className="text-gray-400 text-sm">
-                            {getCategoryText(donation.category)} • {getRegionText(donation.region)}
-                          </p>
+                          <div className="flex items-center text-sm text-gray-400">
+                            <span className="mr-4">{getRegionText(donation.region)}</span>
+                            <span>{getCategoryText(donation.category)}</span>
+                          </div>
+                          <div className="flex items-center text-sm text-gray-400 mt-1">
+                            <span className="mr-4">🏢 {getOrganizationText(donation.organization)}</span>
+                          </div>
                         </div>
                       </div>
                       
@@ -258,22 +270,14 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
                         {getStatusText(donation.status)}
                       </span>
                       
-                      {donation.status === 'completed' && (
-                        <button
-                          onClick={() => handleConfirmDelivery(donation.id)}
-                          disabled={confirmingId === donation.id}
-                          className="glass px-4 py-2 text-purple-300 hover:text-purple-200 border border-purple-500/30 hover:border-purple-500/50 rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50"
-                        >
-                          {confirmingId === donation.id ? (
-                            <div className="flex items-center gap-2">
-                              <div className="spinner"></div>
-                              <span>Confirming...</span>
-                            </div>
-                          ) : (
-                            <span>📦 Confirm Delivery</span>
-                          )}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleConfirm(donation.id)}
+                        disabled={donation.status === 'delivered'}
+                        className="text-xs font-semibold rounded-full px-3 py-1 transition-all duration-300
+                          bg-green-500/20 text-green-300 hover:bg-green-500/40 disabled:bg-gray-500/20 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      >
+                        {donation.status === 'delivered' ? '✓ Delivered' : 'Confirm Delivery'}
+                      </button>
                     </div>
                   </div>
                   

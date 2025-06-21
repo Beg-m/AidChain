@@ -1,5 +1,5 @@
 import FreighterApi from '@stellar/freighter-api';
-import StellarSdk from '@stellar/stellar-sdk';
+// NOTE: StellarSdk is now only used on the server-side in API routes.
 
 // Stellar network configuration
 const STELLAR_NETWORK = "Test SDF Network ; September 2015";
@@ -18,6 +18,7 @@ export interface DonationData {
   amount: string;
   category: string;
   region: string;
+  organization: string;
   timestamp: string;
   transactionHash: string;
   status: 'pending' | 'completed' | 'failed' | 'delivered';
@@ -90,43 +91,38 @@ export const createSmartContractDonation = async (
   region: string
 ): Promise<SmartContractDonation> => {
   try {
-    if (!CONTRACT_ID) {
-      throw new Error('Smart contract not deployed');
-    }
-
     const { address: donorAddress } = await freighterApi.getAddress();
     
-    // Create transaction for smart contract call
-    const server = new StellarSdk.Server(HORIZON_URL);
-    const account = await server.loadAccount(donorAddress);
-    
-    const transaction = new StellarSdk.TransactionBuilder(account, {
-      fee: StellarSdk.BASE_FEE,
-      networkPassphrase: STELLAR_NETWORK,
-    })
-      .addOperation(
-        StellarSdk.Operation.invokeHostFunction({
-          hostFunction: StellarSdk.HostFunction.invokeContract({
-            contractId: CONTRACT_ID,
-            functionName: 'create_donation',
-            args: [
-              StellarSdk.nativeToScVal(donorAddress, 'address'),
-              StellarSdk.nativeToScVal(parseFloat(amount) * 10000000, 'i128'), // Convert to stroops
-              StellarSdk.nativeToScVal(category, 'string'),
-              StellarSdk.nativeToScVal(region, 'string'),
-            ],
-          }),
-        })
-      )
-      .setTimeout(30)
-      .build();
+    // 1. Create the transaction on the server
+    const createResponse = await fetch('/api/create-transaction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ donorAddress, amount, category, region }),
+    });
+    if (!createResponse.ok) {
+      const error = await createResponse.json();
+      throw new Error(error.error || 'Failed to create transaction');
+    }
+    const { xdr } = await createResponse.json();
 
-    // Sign and submit transaction
-    const signedTx = await freighterApi.signTransaction(transaction.toXDR(), STELLAR_NETWORK);
-    const result = await server.submitTransaction(StellarSdk.TransactionBuilder.fromXDR(signedTx, STELLAR_NETWORK));
+    // 2. Sign the transaction on the client
+    const signedTx = await freighterApi.signTransaction(xdr, { networkPassphrase: STELLAR_NETWORK });
+
+    // 3. Submit the signed transaction on the server
+    const submitResponse = await fetch('/api/stellar-donation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ xdr: signedTx }),
+    });
+
+    if (!submitResponse.ok) {
+        const error = await submitResponse.json();
+        throw new Error(error.error || 'Failed to submit transaction');
+    }
+
+    const { result } = await submitResponse.json();
 
     if (result.successful) {
-      // Create donation object from transaction result
       const donation: SmartContractDonation = {
         donor: donorAddress,
         amount,
@@ -135,7 +131,6 @@ export const createSmartContractDonation = async (
         timestamp: Math.floor(Date.now() / 1000),
         status: 'completed',
       };
-
       return donation;
     } else {
       throw new Error('Smart contract transaction failed');
@@ -152,7 +147,6 @@ export const getSmartContractDonations = async (): Promise<SmartContractDonation
     if (!CONTRACT_ID) {
       return [];
     }
-
     const server = new StellarSdk.Server(HORIZON_URL);
     const account = await server.loadAccount(CONTRACT_ID);
     
@@ -200,7 +194,8 @@ export const getSmartContractStats = async (): Promise<SmartContractStats> => {
 export const createDonation = async (
   amount: string,
   category: string,
-  region: string
+  region: string,
+  organization: string
 ): Promise<DonationData> => {
   try {
     const { address: publicKey } = await freighterApi.getAddress();
@@ -221,6 +216,7 @@ export const createDonation = async (
       amount,
       category,
       region,
+      organization,
       timestamp: new Date().toISOString(),
       transactionHash: `dummy_tx_${Date.now()}` + Math.random().toString(36).substring(2, 15),
       status: 'completed', // For demo, assume it's completed instantly
@@ -240,83 +236,54 @@ export const createDonation = async (
 // Get donation history (supports both demo and on-chain data)
 export const getDonationHistory = async (publicKey?: string): Promise<DonationData[]> => {
   try {
-    // If publicKey is provided, try to get on-chain data
+    // If publicKey is provided, try to get on-chain data via our API route
     if (publicKey) {
-      const server = new StellarSdk.Server(HORIZON_URL);
-      const payments = await server.payments().forAccount(publicKey).order('desc').limit(20).call();
-      const donations: DonationData[] = payments.records
-        .filter((op: any) => op.type === 'payment' && op.asset_type === 'native' && op.from === publicKey)
-        .map((op: any) => ({
-          id: op.id,
-          amount: op.amount,
-          category: 'money', // On-chain'den kategori bilgisi alınamaz, default 'money'
-          region: 'unknown', // On-chain'den bölge bilgisi alınamaz, default 'unknown'
-          timestamp: op.created_at,
-          transactionHash: op.transaction_hash,
-          status: 'completed',
-          donorAddress: op.from,
-        }));
-      return donations;
-    } else {
-      // Fallback to demo data from localStorage
-      const donations = localStorage.getItem('donations');
-      return donations ? JSON.parse(donations) : [];
+      const response = await fetch(`/api/getWalletData?publicKey=${publicKey}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch on-chain history');
+      }
+      const { history } = await response.json();
+      return history;
     }
+
+    // Fallback to local storage for demo/unconnected state
+    const localData = localStorage.getItem('donations');
+    return localData ? JSON.parse(localData) : [];
   } catch (error) {
-    console.error('Error loading donation history:', error);
-    // Fallback to demo data if on-chain fails
-    const donations = localStorage.getItem('donations');
-    return donations ? JSON.parse(donations) : [];
+    console.error('Error getting donation history:', error);
+    return []; // Return empty array on error
   }
 };
 
-// DUMMY: Confirm delivery and create a fake NFT ID
-export const confirmDelivery = async (donationId: string): Promise<DonationData> => {
-  try {
-    const donations = await getDonationHistory();
-    const donationIndex = donations.findIndex((d: DonationData) => d.id === donationId);
-
-    if (donationIndex === -1) {
-      throw new Error('Donation not found');
-    }
-
-    const updatedDonation = {
-      ...donations[donationIndex],
-      status: 'delivered' as const,
-      deliveryNftId: `nft-aid-${Date.now()}`
-    };
-
-    donations[donationIndex] = updatedDonation;
-    localStorage.setItem('donations', JSON.stringify(donations));
-
-    return updatedDonation;
-  } catch (error) {
-    console.error('Error confirming delivery:', error);
-    throw error;
-  }
-};
-
-// Get wallet balance (should be via API route)
+// Get wallet balance from our API route
 export const getWalletBalance = async (): Promise<string> => {
   try {
-    // First check if there's a demo balance
-    const demoBalance = getDemoBalance();
-    if (demoBalance !== '0') {
-      return demoBalance;
+    const { address: publicKey } = await freighterApi.getAddress();
+    if (publicKey.startsWith('G-DEMO')) {
+      return getDemoBalance();
     }
     
-    // TODO: Implement via API route for real balance
-    return '0';
+    const response = await fetch(`/api/getWalletData?publicKey=${publicKey}`);
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch balance');
+    }
+    const { balance } = await response.json();
+    return balance;
+
   } catch (error) {
     console.error('Error getting wallet balance:', error);
-    return '0';
+    return '0'; // Return '0' on error
   }
 };
 
-// Format XLM amount for display
+// Format XLM string for display
 export const formatXLM = (amount: string): string => {
-  const num = parseFloat(amount);
-  return num.toFixed(2);
+  return parseFloat(amount).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 7,
+  });
 };
 
 // Get transaction status (should be via API route)
@@ -325,46 +292,19 @@ export const getTransactionStatus = async (transactionHash: string): Promise<'pe
   return 'pending';
 };
 
-// Check if smart contract is available
+// Check if smart contract is configured
 export const isSmartContractAvailable = (): boolean => {
   return !!CONTRACT_ID;
 };
 
-// Helper function to convert XLM to stroops
-export const xlmToStroops = (xlm: string): string => {
-  const amount = parseFloat(xlm) * 10000000;
-  return amount.toString();
-};
-
-// Helper function to convert stroops to XLM
-export const stroopsToXlm = (stroops: string): string => {
-  const amount = BigInt(stroops);
-  return (Number(amount) / 10000000).toString();
-};
-
-// Demo function to load XLM balance for testing
+// Load demo balance
 export const loadDemoBalance = async (amount: string = '10000'): Promise<string> => {
-  try {
-    // Store demo balance in localStorage
-    localStorage.setItem('demoBalance', amount);
-    
-    // Update wallet info if connected
-    const { address: publicKey } = await freighterApi.getAddress();
-    const walletInfo: WalletInfo = {
-      publicKey,
-      isConnected: true,
-      balance: amount
-    };
-    
-    console.log(`Demo balance loaded: ${formatXLM(amount)} XLM`);
-    return amount;
-  } catch (error) {
-    console.error('Error loading demo balance:', error);
-    throw new Error('Failed to load demo balance');
-  }
+  localStorage.setItem('demoBalance', amount);
+  // This is a mock implementation. A real one might need to update wallet state.
+  return amount;
 };
 
-// Get demo balance from localStorage
+// Get demo balance
 export const getDemoBalance = (): string => {
   return localStorage.getItem('demoBalance') || '0';
 }; 

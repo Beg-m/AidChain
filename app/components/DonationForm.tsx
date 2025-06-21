@@ -19,6 +19,7 @@ export default function DonationForm({
   const [donationAmount, setDonationAmount] = useState('');
   const [donationCategory, setDonationCategory] = useState('money');
   const [donationRegion, setDonationRegion] = useState('istanbul');
+  const [donationOrganization, setDonationOrganization] = useState('afad');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -46,7 +47,7 @@ export default function DonationForm({
     setSuccess(false);
 
     try {
-      await createDonation(donationAmount, donationCategory, donationRegion);
+      await createDonation(donationAmount, donationCategory, donationRegion, donationOrganization);
       setSuccess(true);
       setDonationAmount('');
       onDonationSuccess();
@@ -190,6 +191,35 @@ export default function DonationForm({
                 <option value="gaziantep" className="bg-gray-800">🏺 Gaziantep</option>
                 <option value="konya" className="bg-gray-800">🕌 Konya</option>
                 <option value="other" className="bg-gray-800">🌐 Other</option>
+              </select>
+            </div>
+
+            {/* Organization Selection */}
+            <div>
+              <label className="block text-gray-300 font-semibold mb-3 text-lg">
+                🏢 Organization
+              </label>
+              <select
+                className="w-full p-4 bg-white/5 border border-white/20 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-transparent text-white transition-all duration-300"
+                value={donationOrganization}
+                onChange={(e) => setDonationOrganization(e.target.value)}
+                disabled={loading}
+              >
+                <option value="afad" className="bg-gray-800">AFAD (Afet ve Acil Durum Yönetimi Başkanlığı)</option>
+                <option value="kizilay" className="bg-gray-800">Kızılay (Türk Kızılayı)</option>
+                <option value="akut" className="bg-gray-800">AKUT (Arama Kurtarma Derneği)</option>
+                <option value="ahbap" className="bg-gray-800">Ahbap Derneği</option>
+                <option value="ihh" className="bg-gray-800">İHH (İnsan Hak ve Hürriyetleri İnsani Yardım Vakfı)</option>
+                <option value="deniz-feneri" className="bg-gray-800">Deniz Feneri Derneği</option>
+                <option value="hayata-destek" className="bg-gray-800">Hayata Destek Derneği (Support to Life)</option>
+                <option value="mazlumder" className="bg-gray-800">Mazlumder (İnsan Hakları ve Mazlumlar İçin Dayanışma Derneği)</option>
+                <option value="and" className="bg-gray-800">AND (Arama Kurtarma Derneği)</option>
+                <option value="tider" className="bg-gray-800">TİDER (Temel İhtiyaç Derneği)</option>
+                <option value="sadakatasi" className="bg-gray-800">Sadakataşı Derneği</option>
+                <option value="besir" className="bg-gray-800">Beşir Derneği</option>
+                <option value="corbada-tuzun-olsun" className="bg-gray-800">Çorbada Tuzun Olsun Derneği</option>
+                <option value="acdc" className="bg-gray-800">ACDC (Afet Çalışmaları Derneği)</option>
+                <option value="ilk-umut" className="bg-gray-800">İlk Umut Derneği</option>
               </select>
             </div>
 

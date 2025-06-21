@@ -11,6 +11,7 @@ pub struct Donation {
     pub amount: i128,
     pub category: Symbol,
     pub region: Symbol,
+    pub organization: Symbol,
     pub timestamp: u64,
     pub status: Symbol,
     pub delivery_nft_id: Option<Symbol>,
@@ -34,6 +35,7 @@ impl AidChainContract {
         amount: i128,
         category: Symbol,
         region: Symbol,
+        organization: Symbol,
     ) -> Donation {
         // Validate inputs
         if amount <= 0 {
@@ -45,6 +47,7 @@ impl AidChainContract {
             amount,
             category: category.clone(),
             region: region.clone(),
+            organization: organization.clone(),
             timestamp: env.ledger().timestamp(),
             status: symbol_short!("pending"),
             delivery_nft_id: None,
@@ -192,13 +195,15 @@ mod test {
         let amount = 100;
         let category = Symbol::new(&env, "money");
         let region = Symbol::new(&env, "istanbul");
+        let organization = Symbol::new(&env, "red_cross");
 
-        let donation = client.create_donation(&donor, &amount, &category, &region);
+        let donation = client.create_donation(&donor, &amount, &category, &region, &organization);
         
         assert_eq!(donation.donor, donor);
         assert_eq!(donation.amount, amount);
         assert_eq!(donation.category, category);
         assert_eq!(donation.region, region);
+        assert_eq!(donation.organization, organization);
         assert_eq!(donation.status, symbol_short!("pending"));
     }
 
@@ -212,8 +217,9 @@ mod test {
         let amount = 100;
         let category = Symbol::new(&env, "money");
         let region = Symbol::new(&env, "istanbul");
+        let organization = Symbol::new(&env, "red_cross");
 
-        client.create_donation(&donor, &amount, &category, &region);
+        client.create_donation(&donor, &amount, &category, &region, &organization);
         
         let stats = client.get_stats();
         assert_eq!(stats.total_donations, 1);
