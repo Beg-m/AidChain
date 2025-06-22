@@ -2,32 +2,32 @@
 
 AidChain is a social impact donation tracking system built on Stellar blockchain for transparency and trust in disaster relief.
 
-## 🚀 Features
+## Features
 
-### 🔐 Secure Login
+### Secure Login
 - **Passkey Support**: Modern and secure biometric login
 - **WebAuthn API**: Browser-based authentication
 
-### 💰 Stellar Blockchain Integration
+### Stellar Blockchain Integration
 - **Freighter Wallet Support**: Stellar wallet integration
 - **Real-time Transactions**: Instant donation transactions on blockchain
 - **Transparent Tracking**: All donations visible on blockchain
 - **Testnet Support**: Stellar testnet usage for development
 - **Smart Contract Integration**: Soroban smart contracts for advanced functionality
 
-### 📊 Donation Management
+### Donation Management
 - **Multiple Categories**: Money, blankets, food, clothing, medicine, cleaning supplies
 - **Regional Distribution**: Donations to different regions of Turkey
 - **Donation History**: Detailed transaction history and statistics
 - **Real-time Balance**: Wallet balance tracking
 - **Smart Contract Stats**: Advanced analytics and reporting
 
-### 🎨 User Experience
+### User Experience
 - **Modern UI/UX**: Responsive design with Tailwind CSS
 - **English Interface**: Full English language support
 - **Mobile Compatible**: Perfect experience on all devices
 
-## 🛠️ Installation
+## Installation
 
 ### Requirements
 - Node.js 18+ 
@@ -70,7 +70,7 @@ npm run dev
 2. Install in your browser
 3. Create testnet account or import existing account
 
-## 🔧 Usage
+## Usage
 
 ### 1. Login
 - Click "Login with Passkey" button
@@ -94,7 +94,7 @@ npm run dev
 - Click blockchain explorer links to verify transactions
 - View smart contract statistics
 
-## 🏗️ Technical Details
+## Technical Details
 
 ### Stellar Integration
 ```typescript
@@ -164,12 +164,12 @@ This application uses Stellar testnet. To get test XLM:
 ## 📱 Supported Features
 
 ### Donation Categories
-- 💰 Money (XLM)
-- 🧸 Blanket
-- 🍎 Food
-- 👕 Clothing
-- 💊 Medicine
-- 🧽 Cleaning Supplies
+- Money (XLM)
+- Blanket
+- Food
+- Clothing
+- Medicine
+- Cleaning Supplies
 
 ### Supported Regions
 - Istanbul
@@ -182,7 +182,7 @@ This application uses Stellar testnet. To get test XLM:
 - Konya
 - Other
 
-## 🔒 Security
+## Security
 
 * All transactions are transparently executed on Stellar blockchain
 * Wallet keys are never stored in the application
@@ -190,7 +190,7 @@ This application uses Stellar testnet. To get test XLM:
 * Secure communication over HTTPS
 * Smart contract code is open source and auditable
 
-## 🚀 Future Features
+## Future Features
 
 * NFT-based donation confirmation
 * Multi-language support
@@ -200,7 +200,7 @@ This application uses Stellar testnet. To get test XLM:
 * Email notifications
 * Smart contract upgrades
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
@@ -208,11 +208,11 @@ This application uses Stellar testnet. To get test XLM:
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Create Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 📞 Contact
+## Contact
 
 * Project Link: [https://github.com/Beg-m/AidChain](https://github.com/Beg-m/AidChain)
 * Issues: [https://github.com/Beg-m/AidChain/issues](https://github.com/Beg-m/AidChain/issues)
