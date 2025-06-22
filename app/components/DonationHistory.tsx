@@ -34,10 +34,13 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
     setError(null);
     try {
       const history = await getDonationHistory(publicKey);
+      console.log('Loaded donation history:', history); // Debug log
       setDonations(history);
     } catch (err: any) {
-      setError('Failed to load donation history.');
-      setDonations([]);
+      console.error('Error loading donation history:', err);
+      setError('Failed to load donation history. Showing demo data instead.');
+      // Fallback to demo data
+      setDonations(demoDonations);
     } finally {
       setLoading(false);
     }
@@ -189,7 +192,10 @@ export default function DonationHistory({ isOpen, onClose, walletInfo }: Donatio
             <div className={`glass px-4 py-2 rounded-lg text-sm font-medium ${
               walletInfo?.publicKey ? 'border-green-500/30 text-green-400' : 'border-yellow-500/30 text-yellow-400'
             } border`}>
-              {walletInfo?.publicKey ? '🔗 On-Chain Data' : '🎭 Demo Data'}
+              {walletInfo?.publicKey ? 
+                (walletInfo.publicKey.startsWith('G-DEMO') ? '🎭 Demo Data' : '🔗 Wallet Data') 
+                : '🎭 Demo Data'
+              }
             </div>
             
             <button

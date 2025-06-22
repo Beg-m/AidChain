@@ -1,4 +1,5 @@
 import FreighterApi from '@stellar/freighter-api';
+import StellarSdk from '@stellar/stellar-sdk';
 // NOTE: StellarSdk is now only used on the server-side in API routes.
 
 // Stellar network configuration
@@ -131,6 +132,23 @@ export const createSmartContractDonation = async (
         timestamp: Math.floor(Date.now() / 1000),
         status: 'completed',
       };
+      
+      // Also save to localStorage for donation history
+      const donationData: DonationData = {
+        id: `smart-${Date.now()}`,
+        amount,
+        category,
+        region,
+        organization: 'Smart Contract',
+        timestamp: new Date().toISOString(),
+        transactionHash: result.hash || `smart_tx_${Date.now()}`,
+        status: 'completed',
+        donorAddress,
+      };
+      
+      const existingDonations = await getDonationHistory();
+      localStorage.setItem('donations', JSON.stringify([donationData, ...existingDonations]));
+      
       return donation;
     } else {
       throw new Error('Smart contract transaction failed');
@@ -236,20 +254,46 @@ export const createDonation = async (
 // Get donation history (supports both demo and on-chain data)
 export const getDonationHistory = async (publicKey?: string): Promise<DonationData[]> => {
   try {
-    // If publicKey is provided, try to get on-chain data via our API route
-    if (publicKey) {
-      const response = await fetch(`/api/getWalletData?publicKey=${publicKey}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch on-chain history');
+    // If publicKey is provided and it's a real wallet (not demo), filter donations by wallet
+    if (publicKey && !publicKey.startsWith('G-DEMO')) {
+      // Get local donations and filter by the connected wallet
+      const localData = localStorage.getItem('donations');
+      const allLocalDonations: DonationData[] = localData ? JSON.parse(localData) : [];
+      
+      // Filter donations that belong to this specific wallet
+      const walletDonations = allLocalDonations.filter(donation => 
+        donation.donorAddress === publicKey
+      );
+      
+      // Try to get on-chain data via our API route
+      try {
+        const response = await fetch(`/api/getWalletData?publicKey=${publicKey}`);
+        if (response.ok) {
+          const { history } = await response.json();
+          // Combine wallet-specific local donations with on-chain data
+          const combinedDonations = [...walletDonations, ...history];
+          // Sort by timestamp (newest first)
+          return combinedDonations.sort((a, b) => 
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching on-chain data:', error);
+        // Fall back to wallet-specific local data only
       }
-      const { history } = await response.json();
-      return history;
+      
+      // Return only wallet-specific donations
+      return walletDonations.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
     }
-
-    // Fallback to local storage for demo/unconnected state
+    
+    // For demo mode or no wallet connected, return all local donations
     const localData = localStorage.getItem('donations');
-    return localData ? JSON.parse(localData) : [];
+    const localDonations: DonationData[] = localData ? JSON.parse(localData) : [];
+    return localDonations.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
   } catch (error) {
     console.error('Error getting donation history:', error);
     return []; // Return empty array on error

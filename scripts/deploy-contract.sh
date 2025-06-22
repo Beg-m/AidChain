@@ -21,10 +21,6 @@ if ! command -v cargo &> /dev/null; then
     exit 1
 fi
 
-# Set network to testnet
-echo "📡 Setting network to testnet..."
-soroban config network set --global testnet
-
 # Build the contract
 echo "🔨 Building smart contract..."
 cd contracts
@@ -34,7 +30,7 @@ cargo build --target wasm32-unknown-unknown --release
 echo "📦 Deploying contract..."
 CONTRACT_ID=$(soroban contract deploy \
     --wasm target/wasm32-unknown-unknown/release/aidchain_contract.wasm \
-    --source testnet \
+    --source testnet-user \
     --network testnet)
 
 echo "✅ Contract deployed successfully!"
