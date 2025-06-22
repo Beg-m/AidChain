@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { create, get } from "@github/webauthn-json";
 import WalletConnection from "./components/WalletConnection";
-import CreateWalletButton from "./components/CreateWalletButton";
 import DonationForm from "./components/DonationForm";
 import DonationHistory from "./components/DonationHistory";
 import { WalletInfo, getDonationHistory, formatXLM } from "./utils/stellar";
@@ -36,6 +35,12 @@ export default function Home() {
     populateDemoData(); // Populate demo data if empty
     if (walletInfo?.publicKey) {
       updateDonationStats(walletInfo.publicKey);
+    } else {
+        // demo data stats
+        const donations = JSON.parse(localStorage.getItem('donations') || '[]');
+        setDonationCount(donations.length);
+        const total = donations.reduce((sum: number, d: { amount: string; }) => sum + parseFloat(d.amount), 0);
+        setTotalDonations(total.toString());
     }
   }, [walletInfo]);
 
@@ -130,6 +135,11 @@ export default function Home() {
   const handleDonationSuccess = () => {
     if (walletInfo?.publicKey) {
       updateDonationStats(walletInfo.publicKey);
+    } else {
+        const donations = JSON.parse(localStorage.getItem('donations') || '[]');
+        setDonationCount(donations.length);
+        const total = donations.reduce((sum: number, d: { amount: string; }) => sum + parseFloat(d.amount), 0);
+        setTotalDonations(total.toString());
     }
   };
 
@@ -274,16 +284,6 @@ export default function Home() {
                   📊 Donation History
                 </button>
               </div>
-
-              <button
-                className="glass px-6 py-3 text-gray-300 hover:text-white transition-colors duration-300"
-                onClick={() => {
-                  setIsAuthenticated(false);
-                  setWalletInfo(null);
-                }}
-              >
-                🚪 Logout
-              </button>
             </>
           )}
 
@@ -346,9 +346,8 @@ export default function Home() {
         </main>
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-gray-500 text-sm">
-          <p>Built with ❤️ for humanitarian aid transparency</p>
-          <p className="mt-2">Powered by Stellar Blockchain Technology</p>
+        <footer className="text-center mt-12 text-gray-500 text-sm">
+          <p>Powered by Stellar Blockchain Technology</p>
         </footer>
       </div>
 
